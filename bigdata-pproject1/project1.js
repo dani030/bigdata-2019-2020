@@ -82,7 +82,7 @@ var dbe = {
     }
   };
 
-var insertClientWithBankAccount=function(firstName1, secondName1, country1, city1, address1, telephone1, email1, code1){
+var insertClientWithBankAccount=function(firstName1, secondName1, country1, city1, address1, telephone1, email1){
 insertClient(firstName1, secondName1, country1, city1, address1, telephone1, email1, code1);
 var ClientObject=db.Clients.find({  firstName: firstName1, secondName: secondName1,  telephone: telephone1});
 db.BankAccounts.insertOne({
@@ -94,7 +94,7 @@ db.BankAccounts.insertOne({
 };
 
 
-var insertClient = function(firstName1, secondName1, country1, city1, address1, telephone1, email1, code1) {
+var insertClient = function(firstName1, secondName1, country1, city1, address1, telephone1, email1) {
   
       
       if(!firstName1) {  
@@ -126,10 +126,7 @@ var insertClient = function(firstName1, secondName1, country1, city1, address1, 
         print('Property *email* is required')
         return;
       } 
-      if(!code1) {
-        print('Property *code* is required')
-        return;
-      }                 
+                  
       
       // insert data 
      db.Clients.insert({
@@ -252,6 +249,20 @@ dbe.insert({
     department:generateDepartment()
 });
 
+dbe.insert({
+  firstName: 'Jacky',  
+  secondName: 'Chan',
+  addressCollection : {   
+    country       : 'Bulgaria',
+    city          : generateCity(),
+    address       : generateAddress()}, 
+    telephone: generateTelephone(), 
+    email: generateEmail(), 
+    position: generatePosition(), 
+    department:generateDepartment(),
+    manager: 'Robin'
+});
+
 //Бизнес заявки част 1
 
 //1. Да се създаде листинг на имената на всички отдели в банката 
@@ -368,4 +379,171 @@ db.Employees.find({
 //1. Да се реализират примерни документи в колекцията.
 
 db.createCollection('HistoryD')
+
+var ChangeDepartment=function(employeeId1,departmentId1, dateOfChange1){
+  
+  db.Employees.find({_id: employeeId1}).forEach(function(document) {
+  
+  
+    db.Employees.update({ _id : document._id},{
+      $set:{
+       department : departmentId1
+     }
+     })
+   })
+
+  db.HistoryD.insert({
+  employeeId:   employeeId1 ,
+  departmentId:   departmentId1,
+  dateOfChange:    dateOfChange1
+})
+}
+
+ChangeDepartment('daef3252694e92feb3eb846', '5daef31c2694e92feb3eb82b', new Date())
+ChangeDepartment('daef3252694e92feb3eb846', '5daef31c2694e92feb3eb82f', new Date())
+
+
+
+
+//3. Да се реализира листинг на служителите които са работили само в един отдел откакто са
+//част от структурата на компанията.
+
+
+
+
+//Бизнес заявки част 3
+
+//1. Да се реализира листинг показващ всички служители които са били уволнени от
+//компанията
+
+db.Employees.find({firstName: 'Serioja'}).forEach(function(document) {
+  
+  
+  db.Employees.update({ _id : document._id},{
+    $set:{
+     isFired : true
+   }
+   })
+ })
+
+
+db.Employees.find({isFired: true})
+
+//2. Да се реализира листинг на всички служителки които са в майчинство в момента. 
+
+
+db.Employees.find({firstName: 'Ekaterina'}).forEach(function(document) {
+  
+  
+  db.Employees.update({ _id : document._id},{
+    $set:{
+     isIntoMotherhood : true
+   }
+   })
+ })
+
+ db.Employees.find({isIntoMotherhood: true})
+
+
+//3. Да се реализира листинг на всички служители които са в отпуска / болничен в момента 
+
+
+db.Employees.find({firstName: 'Nikola'}).forEach(function(document) {
+  
+  
+  db.Employees.update({ _id : document._id},{
+    $set:{
+     isOnLeave : true
+   }
+   })
+ })
+
+ db.Employees.find({ isOnLeave: true})
+
+
+//4. Намерете всички служитери които имат заплата в интервала 2000 – 3000
+
+
+db.Employees.find({firstName: 'Vladimir'}).forEach(function(document) {
+  
+  
+  db.Employees.update({ _id : document._id},{
+    $set:{
+     salary : 2500
+   }
+   })
+ })
+
+ db.Employees.find({ salary: { $gt :  2000, $lt : 3000}})
+
+
+//5. Намерете всички служители които получават съответно 2500 / 3000 / 3500 / 5000
+
+
+db.Employees.find({ $or: [{salary: 2500},{salary: 3000},{salary: 3500},{salary: 5000}]})
+
+
+//6. Намерете всички служители които нямат ръководител
+db.Employees.find({manager: null})
+
+
+//7. Намерете всички старши служители които получават заплата по висока от 5000 лв.
+//Подредете ги в обратен азбучен ред, като се има предвид тяхното първо име. 
+
+db.Employees.find({firstName: 'Ivan'}).forEach(function(document) {
+  
+  
+  db.Employees.update({ _id : document._id},{
+    $set:{
+     salary : 6000
+   }
+   })
+ })
+
+
+db.Employees.find({
+   
+  appointment : {
+    $gt: new Date(new Date().setDate(new Date().getDate()-1825))
+  },  salary: {$gt: 5000}
+}).sort({firstName:-1})
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Бизнес заявки част 4
+
+//1. Да се намерят всички клиенти които имат сметки във валута. ( различна от BGN )
+
+insertClient('Stefani', 'Dimitrova', 'Bulgaria', 'Plovdiv', 'XaHkO Brat', '0878123654','stefi@abv.bg','dsadsafdsfds2121')
+db.BankAccounts.insertOne({
+  code      : '5daf2ec77fb815edd427abd7',
+  clientId : '5daf2ec77fb815edd427abd7',      
+  currency  : 'Dolar',
+  balance : 10000
+})
+
+
+
+var buildCurrencyCollection = function() {
+
+  db.BankAccounts.find({currency : {$nin: ['BGN']}}).forEach(function(userElement) {
+    
+    var currencyCollection = db.Clients.find({ _id : userElement.clientId}).toArray();    
+    
+    userElement.all_currency = currencyCollection;
+    
+    db.clientCurrencyAgregation.insert(userElement);
+  });
+}
+
 
