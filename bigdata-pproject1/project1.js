@@ -538,12 +538,52 @@ var buildCurrencyCollection = function() {
 
   db.BankAccounts.find({currency : {$nin: ['BGN']}}).forEach(function(userElement) {
     
-    var currencyCollection = db.Clients.find({ _id : userElement.clientId}).toArray();    
+    var currencyCollection = db.Clients.find(ObjectId(userElement.clientId)).toArray();    
     
     userElement.all_currency = currencyCollection;
     
-    db.clientCurrencyAgregation.insert(userElement);
+     db.clientCurrencyAgregation.insert(userElement);
+     
   });
 }
 
+buildCurrencyCollection()
+db.clientCurrencyAgregation.find().pretty()
 
+
+
+//2. Да се намерят всички клиенти които имат сметки с нулево парично салдо. Напълно празни. 
+
+var buildZeroBalanceCollection = function() {
+
+  db.BankAccounts.find({balance: 0}).forEach(function(userElement) {
+    
+    var zeroBalanceCollection = db.Clients.find(ObjectId(userElement.clientId)).toArray();    
+    
+    userElement.zeroBalance = zeroBalanceCollection;
+    
+     db.clientZeroBalanceAgregation.insert(userElement);
+     
+  });
+}
+
+buildZeroBalanceCollection()
+db.clientCurrencyAgregation.find().pretty()
+
+
+//3. Да се добави название на сметката на всеки клиент. Названието на сметката му, е името на
+//клиента последвано от думата сметка и валутата на сметката. Актуализирайте всички
+//клиенти
+
+var addName = function() {
+
+  db.BankAccounts.find().forEach(function(userElement) {
+    
+    var ClientObject = db.Clients.find(ObjectId(userElement.clientId)).toArray();    
+    
+    db.BankAccounts.update({_id: userElement._id},{
+      $set:{
+        name: ClientObject.firstName+'smetka'+userElement.currency
+      }});
+  });
+}
